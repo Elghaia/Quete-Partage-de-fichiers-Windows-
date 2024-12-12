@@ -1,4 +1,4 @@
-## Prérequis
+# Prérequis
 Un serveur Windows Server 2022 avec le rôle ADDS déployé
 Un poste client Windows 10
 Des groupes AD créés : "RH", "Comptabilité", "Direction"
@@ -26,12 +26,31 @@ New-SmbShare -Name $partage -Path $dossier_partage
 $groupe_rh = "wilder.lan\RH"
 $groupe_compta = "wider.lan\Comptabilité"
 $groupe_direction = "wilder.lan\Direction"
+function Add-AccessRule {
+    param(
+        [Parameter(Mandatory)]
+        [string]$path,
+        [string]$identityReference,
+        [string]$rights
+    )
 
-# Attribuer les permissions NTFS
-Set-Acl -Path "$dossier_partage\RH" -AccessRule "IdentityReference=$groupe_rh;AccessControlType='Allow';Rights='FullControl'"
-Set-Acl -Path "$dossier_partage\Comptabilité" -AccessRule "IdentityReference=$groupe_compta;AccessControlType='Allow';Rights='FullControl'"
-Set-Acl -Path $dossier_partage -AccessRule "IdentityReference=$groupe_direction;AccessControlType='Allow';Rights='FullControl'"
-Set-Acl -Path $dossier_partage -AccessRule "IdentityReference='Everyone';AccessControlType='Allow';Rights='Read'"
+    $acl = Get-Acl $path
+    $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($identityReference, $rights, "Allow")
+    $acl.AddAccessRule($rule)
+    Set-Acl -Path $path -AclObject $acl
+}
+# Ajouter les permissions aux groupes
+Add-AccessRule -path "C:\Documents_Entreprise\RH" -identityReference "wilder.lan\RH" -rights "FullControl"
+Add-AccessRule -path "C:\Documents_Entreprise\Comptabilité" -identityReference "wilder.lan\Comptabilité" -rights "FullControl"
+Add-AccessRule -path "C:\Documents_Entreprise\Direction" -identityReference "wilder.lan\Direction" -rights "FullControl"
+
+# Donner la permission sur tout les dossiers au groupe direction 
+Add-AccessRule -path "C:\Documents_Entreprise\RH" -identityReference "wilder.lan\Direction" -rights "FullControl"
+Add-AccessRule -path "C:\Documents_Entreprise\Comptabilité" -identityReference "wilder.lan\Direction" -rights "FullControl"
+
+# Donner la permission en lecture seul aux utilisateurs du domaine
+
+Add-AccessRule -path "C:\Documents_Entreprise" -identityReference "Everyone" -rights "Read"
 
 # Vérifier les partages
 Get-SmbShare
