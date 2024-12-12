@@ -1,8 +1,13 @@
 # Prérequis
-Un serveur Windows Server 2022 avec le rôle ADDS déployé
-Un poste client Windows 10
+Un serveur Windows Server 2022 avec le rôle ADDS déployé 
+
+Un poste client Windows 10 
+
 Des groupes AD créés : "RH", "Comptabilité", "Direction"
+
 Des utilisateurs appartenant à ces groupes
+
+Le rôle Serveur de fichiers installé sur le serveur
 
 
 # Creation d'un Script PowerShell partage.PS1
